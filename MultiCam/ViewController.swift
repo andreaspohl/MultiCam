@@ -21,7 +21,16 @@ class ViewController: NSViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        configureCapture()
+    }
+
+    override var representedObject: AnyObject? {
+        didSet {
+        // Update the view, if already loaded.
+        }
+    }
+    
+    func configureCapture() {
         do {
             deviceInput = try AVCaptureDeviceInput(device: device)
             
@@ -51,15 +60,7 @@ class ViewController: NSViewController {
         catch let error as NSError {
             NSLog("\(error), \(error.localizedDescription)")
         }
+        
     }
-
-    override var representedObject: AnyObject? {
-        didSet {
-        // Update the view, if already loaded.
-        }
-    }
-    
-    
-
 }
 
