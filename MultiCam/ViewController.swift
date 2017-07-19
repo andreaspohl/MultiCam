@@ -16,17 +16,27 @@ class ViewController: NSViewController {
     
     let cameraSession = AVCaptureSession()
     let device = AVCaptureDevice.defaultDeviceWithMediaType(AVMediaTypeVideo) as AVCaptureDevice
+    var devices: [AVCaptureDevice]!
     var deviceInput: AVCaptureDeviceInput?
     var dataOutput: AVCaptureVideoDataOutput?
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        getInputs()
         configureCapture()
     }
 
     override var representedObject: AnyObject? {
         didSet {
         // Update the view, if already loaded.
+        }
+    }
+    
+    func getInputs() {
+        devices = AVCaptureDevice.devicesWithMediaType(AVMediaTypeVideo) as! [AVCaptureDevice]
+        
+        for dev in devices {
+            NSLog(dev.modelID)
         }
     }
     
