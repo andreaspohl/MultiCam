@@ -41,6 +41,24 @@ class ViewController: NSViewController {
         return devices
     }
     
+    //calculate rectangle position
+    //the videos are arranged in a row
+    func calcRect(i: Int, maxI: Int) -> CGRect {
+        
+        
+        let index: CGFloat = CGFloat(i - 1)
+        
+        let rectHeight = previewBox.bounds.height
+        let rectWidth = previewBox.bounds.width / CGFloat(maxI)
+        
+        let rectX: CGFloat = index * rectWidth
+        let rectY: CGFloat = 0
+        
+        let rect = CGRect.init(x: rectX, y: rectY, width: rectWidth, height: rectHeight)
+        
+        return rect
+    }
+    
     //setup session with inputs and output
     func setupSession() {
         do {
@@ -48,10 +66,17 @@ class ViewController: NSViewController {
             session.beginConfiguration()
             
             let devices = getDevices()
+            //let deviceCount = devices.count
+            let deviceCount = 3
             
             let superVideoPreviewLayer = AVCaptureVideoPreviewLayer(session: session)
             
+            var i: Int = 0
+            
             for device in devices {
+                
+                //device number
+                i += 1
                 
                 //adding devices as input to session
                 let input = try AVCaptureDeviceInput(device: device)
@@ -74,13 +99,15 @@ class ViewController: NSViewController {
                     session.addConnection(connection)
                 }
                 
-                videoPreviewLayer.frame = previewBox.bounds
+                videoPreviewLayer.frame = calcRect(i, maxI: deviceCount)
                 
                 superVideoPreviewLayer.addSublayer(videoPreviewLayer)
                 
-                previewBox.layer = superVideoPreviewLayer
             }
             
+            
+            //connect layer to view
+            previewBox.layer = superVideoPreviewLayer
             
 /*            deviceInput = try AVCaptureDeviceInput(device: device)
             
