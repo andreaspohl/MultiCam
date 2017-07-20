@@ -43,13 +43,13 @@ class ViewController: NSViewController {
     
     //calculate rectangle position
     //the videos are arranged in a row
-    func calcRect(i: Int, maxI: Int) -> CGRect {
+    func calcRect(currentDevice: Int, deviceCount: Int) -> CGRect {
         
         
-        let index: CGFloat = CGFloat(i - 1)
+        let index: CGFloat = CGFloat(currentDevice - 1)
         
         let rectHeight = previewBox.bounds.height
-        let rectWidth = previewBox.bounds.width / CGFloat(maxI)
+        let rectWidth = previewBox.bounds.width / CGFloat(deviceCount)
         
         let rectX: CGFloat = index * rectWidth
         let rectY: CGFloat = 0
@@ -66,27 +66,26 @@ class ViewController: NSViewController {
             session.beginConfiguration()
             
             let devices = getDevices()
-            //let deviceCount = devices.count
-            let deviceCount = 3
+            let deviceCount = devices.count
             
             let superVideoPreviewLayer = AVCaptureVideoPreviewLayer(session: session)
             
-            var i: Int = 0
+            var currentDevice: Int = 0
             
             for device in devices {
                 
                 //device number
-                i += 1
+                currentDevice += 1
                 
                 //adding devices as input to session
-                let input = try AVCaptureDeviceInput(device: device)
-                if (session.canAddInput(input) == true) {
-                    session.addInputWithNoConnections(input)
-                    NSLog("\(device.modelID) added as input")
+                let deviceInput = try AVCaptureDeviceInput(device: device)
+                if (session.canAddInput(deviceInput) == true) {
+                    session.addInputWithNoConnections(deviceInput)
+                    NSLog("\(device.modelID) added as deviceInput")
                 }
                 
                 //get the video input port
-                let inputPort = input.ports[0] as! AVCaptureInputPort
+                let inputPort = deviceInput.ports[0] as! AVCaptureInputPort
                 
                 //create a video preview layer with the session
                 let videoPreviewLayer = AVCaptureVideoPreviewLayer(session: session)
@@ -99,7 +98,7 @@ class ViewController: NSViewController {
                     session.addConnection(connection)
                 }
                 
-                videoPreviewLayer.frame = calcRect(i, maxI: deviceCount)
+                videoPreviewLayer.frame = calcRect(currentDevice, deviceCount: deviceCount)
                 
                 superVideoPreviewLayer.addSublayer(videoPreviewLayer)
                 
