@@ -14,16 +14,13 @@ class ViewController: NSViewController {
     
     @IBOutlet weak var previewBox: NSView!
     
-    let cameraSession = AVCaptureSession()
-    let device = AVCaptureDevice.defaultDeviceWithMediaType(AVMediaTypeVideo) as AVCaptureDevice
-    var devices: [AVCaptureDevice]!
+    let session = AVCaptureSession()
     var deviceInput: AVCaptureDeviceInput?
-    var dataOutput: AVCaptureVideoDataOutput?
+    var videoDataOutput: AVCaptureVideoDataOutput?
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        getInputs()
-        configureCapture()
+        setupSession()
     }
 
     override var representedObject: AnyObject? {
@@ -32,40 +29,84 @@ class ViewController: NSViewController {
         }
     }
     
-    func getInputs() {
-        devices = AVCaptureDevice.devicesWithMediaType(AVMediaTypeVideo) as! [AVCaptureDevice]
+    //get all video devices
+    func getDevices() -> [AVCaptureDevice] {
+        
+        let devices = AVCaptureDevice.devicesWithMediaType(AVMediaTypeVideo) as! [AVCaptureDevice]
         
         for dev in devices {
             NSLog(dev.modelID)
         }
+        
+        return devices
     }
     
-    func configureCapture() {
+    //setup session with inputs and output
+    func setupSession() {
         do {
-            deviceInput = try AVCaptureDeviceInput(device: device)
+
+            session.beginConfiguration()
             
-            cameraSession.beginConfiguration()
+            let devices = getDevices()
             
-            if (cameraSession.canAddInput(deviceInput) == true) {
-                cameraSession.addInput(deviceInput)
+            let superVideoPreviewLayer = AVCaptureVideoPreviewLayer(session: session)
+            
+            for device in devices {
+                
+                //adding devices as input to session
+                let input = try AVCaptureDeviceInput(device: device)
+                if (session.canAddInput(input) == true) {
+                    session.addInputWithNoConnections(input)
+                    NSLog("\(device.modelID) added as input")
+                }
+                
+                //get the video input port
+                let inputPort = input.ports[0] as! AVCaptureInputPort
+                
+                //create a video preview layer with the session
+                let videoPreviewLayer = AVCaptureVideoPreviewLayer(session: session)
+                
+                //create a connection with the input port and the preview layer
+                //and connect it to the session
+                let connection = AVCaptureConnection.init(inputPort: inputPort, videoPreviewLayer: videoPreviewLayer)
+                
+                if (session.canAddConnection(connection) == true) {
+                    session.addConnection(connection)
+                }
+                
+                videoPreviewLayer.frame = previewBox.bounds
+                
+                superVideoPreviewLayer.addSublayer(videoPreviewLayer)
+                
+                previewBox.layer = superVideoPreviewLayer
+            }
+            
+            
+/*            deviceInput = try AVCaptureDeviceInput(device: device)
+            
+            
+            if (session.canAddInput(deviceInput) == true) {
+                session.addInput(deviceInput)
                 NSLog("input added")
             }
+
             
+            videoDataOutput = AVCaptureVideoDataOutput()
+            videoDataOutput?.alwaysDiscardsLateVideoFrames = true
             
-            dataOutput = AVCaptureVideoDataOutput()
-            dataOutput?.alwaysDiscardsLateVideoFrames = true
-            
-            if (cameraSession.canAddOutput(dataOutput) == true) {
-                cameraSession.addOutput(dataOutput)
+            if (session.canAddOutput(videoDataOutput) == true) {
+                session.addOutput(videoDataOutput)
                 NSLog("output added")
             }
-            
-            cameraSession.commitConfiguration()
-            
-            let previewLayer = AVCaptureVideoPreviewLayer(session: cameraSession)
+
+ */
+            session.commitConfiguration()
+ /*
+            let previewLayer = AVCaptureVideoPreviewLayer(session: session)
             previewLayer.frame = previewBox.bounds
             previewBox.layer = previewLayer
-            cameraSession.startRunning()
+*/
+            session.startRunning()
         }
         catch let error as NSError {
             NSLog("\(error), \(error.localizedDescription)")
